@@ -10,47 +10,46 @@ import (
 const (
 	ChototBaseUrl = "https://gateway.chotot.com"
 	AdListingPath = "/v1/public/ad-listing"
-	MaxPrice = 7000000
-
+	MaxPrice      = 7000000
 )
 
 var (
 	Q1Params = &Params{
 		Region: 13,
-		Area:96,
-		Cg:1010,
-		Page:1,
-		Limit:20,
-		O: 40,
+		Area:   96,
+		Cg:     1010,
+		Page:   1,
+		Limit:  20,
+		O:      40,
 	}
 )
 
 type Params struct {
 	Region int `url:"region,omitempty"`
-	Area int `url:"area,omitempty"`
-	Cg int `url:"cg,omitempty"`
-	Page int `url:"page,omitempty"`
-	Limit int `url:"limit,omitempty"`
-	O int `url:"o,omitempty"`
+	Area   int `url:"area,omitempty"`
+	Cg     int `url:"cg,omitempty"`
+	Page   int `url:"page,omitempty"`
+	Limit  int `url:"limit,omitempty"`
+	O      int `url:"o,omitempty"`
 }
 
 type AdPost struct {
-	AdID int32 `json:"ad_id"`
-	ListID int32 `json:"list_id"`
-	ListTime int64 `json:"list_time"`
-	Subject string `json:"subject"`
-	Price int64 `json:"price"`
-	IsCompanyAd bool `json:"company_ad"`
+	AdID        int32  `json:"ad_id"`
+	ListID      int32  `json:"list_id"`
+	ListTime    int64  `json:"list_time"`
+	Subject     string `json:"subject"`
+	Price       int64  `json:"price"`
+	IsCompanyAd bool   `json:"company_ad"`
 }
 
 type Response struct {
-	Total int `json:"total"`
-	Ads []AdPost `json:"ads"`
+	Total int      `json:"total"`
+	Ads   []AdPost `json:"ads"`
 }
 
 func main() {
 
-	maxTime := time.Now().Truncate(1*time.Hour)
+	maxTime := time.Now().Truncate(1 * time.Hour)
 
 	for {
 		//log.Printf("MaxTime is %d", maxTime)
@@ -82,6 +81,6 @@ func main() {
 		maxTime = tempMaxTime
 		//fmt.Printf("New MaxTime is %d", maxTime)
 
-		time.Sleep(1*time.Minute)
+		time.Sleep(1 * time.Minute)
 	}
 }
