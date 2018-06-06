@@ -4,12 +4,25 @@ import (
 	"github.com/dghubble/sling"
 	"log"
 	"fmt"
+	"time"
 )
 
 const (
 	ChototBaseUrl = "https://gateway.chotot.com"
 	AdListingPath = "/v1/public/ad-listing"
 	MaxPrice = 7000000
+
+)
+
+var (
+	Q1Params = &Params{
+		Region: 13,
+		Area:96,
+		Cg:1010,
+		Page:1,
+		Limit:20,
+		O: 40,
+	}
 )
 
 type Params struct {
@@ -36,28 +49,39 @@ type Response struct {
 }
 
 func main() {
-	Q1Params := &Params{
-		Region: 13,
-		Area:96,
-		Cg:1010,
-		Page:1,
-		Limit:20,
-		O: 40,
-	}
-	AdListingResult := new(Response)
-	_, err := sling.New().Get(ChototBaseUrl + AdListingPath).QueryStruct(Q1Params).ReceiveSuccess(AdListingResult)
-	if err != nil {
-		log.Fatalf("Error executing request: %s", err)
-	}
 
-	for _, RentalPost := range AdListingResult.Ads {
-		if RentalPost.Price > MaxPrice {
-			continue
+	maxTime := time.Now().Truncate(1*time.Hour)
+
+	for {
+		//log.Printf("MaxTime is %d", maxTime)
+
+		AdListingResult := new(Response)
+		_, err := sling.New().Get(ChototBaseUrl + AdListingPath).QueryStruct(Q1Params).ReceiveSuccess(AdListingResult)
+		if err != nil {
+			log.Fatalf("Error executing request: %s", err)
 		}
 
-		fmt.Printf("URL: https://nha.chotot.com/%d.htm \n", RentalPost.ListID)
-		fmt.Printf("Subject: %s \n", RentalPost.Subject)
-		fmt.Printf("Price: %d \n", RentalPost.Price)
-		fmt.Printf("*** \n")
+		tempMaxTime := maxTime
+		for _, RentalPost := range AdListingResult.Ads {
+			postTime := time.Unix(RentalPost.ListTime, 0)
+			if RentalPost.Price > MaxPrice || maxTime.After(postTime) || maxTime.Equal(postTime) {
+				continue
+			}
+			if postTime.After(tempMaxTime) {
+				tempMaxTime = postTime
+			}
+
+			fmt.Printf("AdID: %d\n ", RentalPost.AdID)
+			fmt.Printf("URL: https://nha.chotot.com/%d.htm \n", RentalPost.ListID)
+			fmt.Printf("Subject: %s \n", RentalPost.Subject)
+			fmt.Printf("Price: %d \n", RentalPost.Price)
+			fmt.Printf("*** \n")
+
+			// TODO: Launch a chat webhook here.
+		}
+		maxTime = tempMaxTime
+		//fmt.Printf("New MaxTime is %d", maxTime)
+
+		time.Sleep(10*time.Second)
 	}
 }
