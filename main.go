@@ -82,6 +82,6 @@ func main() {
 		maxTime = tempMaxTime
 		//fmt.Printf("New MaxTime is %d", maxTime)
 
-		time.Sleep(10*time.Second)
+		time.Sleep(1*time.Minute)
 	}
 }
