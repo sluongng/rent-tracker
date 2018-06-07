@@ -1,9 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"github.com/dghubble/sling"
 	"github.com/sluongng/dingbot"
+
+	"fmt"
 	"log"
 	"time"
 )
@@ -71,11 +72,6 @@ func main() {
 				tempMaxTime = postTime
 			}
 
-			fmt.Printf("AdID: %d\n ", RentalPost.AdID)
-			fmt.Printf("URL: https://nha.chotot.com/%d.htm \n", RentalPost.ListID)
-			fmt.Printf("Subject: %s \n", RentalPost.Subject)
-			fmt.Printf("Price: %d \n", RentalPost.Price)
-			fmt.Printf("*** \n")
 			Send2DingTalk(
 				RentalPost.AdID,
 				fmt.Sprintf("https://nha.chotot.com/%d.htm", RentalPost.ListID),
@@ -83,8 +79,11 @@ func main() {
 				RentalPost.Price,
 				RentalPost.ImageURL,
 			)
-
-			// TODO: Launch a chat webhook here.
+			fmt.Printf("AdID: %d\n ", RentalPost.AdID)
+			fmt.Printf("URL: https://nha.chotot.com/%d.htm \n", RentalPost.ListID)
+			fmt.Printf("Subject: %s \n", RentalPost.Subject)
+			fmt.Printf("Price: %d \n", RentalPost.Price)
+			fmt.Printf("*** \n")
 		}
 		maxTime = tempMaxTime
 
