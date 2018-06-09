@@ -19,9 +19,15 @@
   packages = ["."]
   revision = "b2bf0d75739e37cc01adb3dbf26c9685f9202578"
 
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/crypto"
+  packages = ["openpgp/errors"]
+  revision = "8ac0e0d97ce45cd83d1d7243c060cb8461dda5e9"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "61715258918300f5ba68e17074a974d2f33a9e5301bd9a7527172c100df5ce73"
+  inputs-digest = "342e3a1ee6f224fd4e0b95ef4449bb03316b8ff0fb494ee83a20821ce28416ae"
   solver-name = "gps-cdcl"
   solver-version = 1
