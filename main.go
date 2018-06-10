@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/dghubble/sling"
 	"log"
 	"time"
 
@@ -86,7 +85,6 @@ func main() {
 			fmt.Printf("*** \n")
 		}
 		maxTime = tempMaxTime
-		// TODO: save the data.
 
 		time.Sleep(1 * time.Minute)
 	}
