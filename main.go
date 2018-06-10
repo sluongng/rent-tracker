@@ -5,6 +5,8 @@ import (
 	"github.com/dghubble/sling"
 	"log"
 	"time"
+
+	"github.com/dghubble/sling"
 )
 
 const (
@@ -57,7 +59,7 @@ func main() {
 		AdListingResult := new(Response)
 		_, err := sling.New().Get(ChototBaseUrl + AdListingPath).QueryStruct(Q1Params).ReceiveSuccess(AdListingResult)
 		if err != nil {
-			log.Fatalf("Error executing request: %s", err)
+			log.Printf("Error executing request: %s", err)
 		}
 
 		tempMaxTime := maxTime

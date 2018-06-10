@@ -14,7 +14,7 @@ func Send2DingTalk(adID int32, url string, subject string, price int64, imageURL
 
 **AdID**: %d
 
-**URL**: %s
+**URL**: [LINK](%s)
 
 **Subject**: %s
 
