@@ -17,11 +17,11 @@
   branch = "master"
   name = "github.com/sluongng/dingbot"
   packages = ["."]
-  revision = "b2bf0d75739e37cc01adb3dbf26c9685f9202578"
+  revision = "bbca4629ce3108e3c5ba4f987c8480df79d9569e"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "61715258918300f5ba68e17074a974d2f33a9e5301bd9a7527172c100df5ce73"
+  inputs-digest = "e5de7e3cce0d83ce00843346d432f5f40f9a074ea88211dcb2ef2f5821f97764"
   solver-name = "gps-cdcl"
   solver-version = 1

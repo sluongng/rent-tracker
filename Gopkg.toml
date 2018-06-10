@@ -25,6 +25,14 @@
 #   unused-packages = true
 
 
+[[constraint]]
+  name = "github.com/dghubble/sling"
+  version = "1.1.0"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/sluongng/dingbot"
+
 [prune]
   go-tests = true
   unused-packages = true
