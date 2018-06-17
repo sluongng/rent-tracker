@@ -1,18 +1,22 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/dghubble/sling"
+	"strconv"
+	"strings"
 )
 
 const (
 	ChototBaseUrl = "https://gateway.chotot.com"
 	AdListingPath = "/v1/public/ad-listing"
 	MaxPrice      = 7000000
-	AccessToken   = "123456"
+	AccessToken   = "e758dd042bf4c3f825fe46efe817b219c1c3ed4f38df17a6601d384e1ceff6a9"
 )
 
 var (
@@ -50,11 +54,39 @@ type Response struct {
 	Ads   []AdPost `json:"ads"`
 }
 
+func isOldPost(postIdList []string, postId string) bool {
+	if len(postIdList) == 0 {
+		return false
+	}
+
+	for _, id := range postIdList {
+		if id == postId {
+			return true
+		}
+	}
+
+	return false
+}
+
 func main() {
+
+	f, err := os.OpenFile("log/app.log", os.O_APPEND|os.O_RDWR, 0600)
+	if err != nil {
+		log.Printf("Error opening log file: %s", err)
+	}
+	defer f.Close()
+	scanner := bufio.NewScanner(f)
+	scanner.Split(bufio.ScanLines)
 
 	maxTime := time.Now().Truncate(1 * time.Hour)
 
 	for {
+		var oldPosts []string
+		for scanner.Scan() {
+			lineSlice := strings.Split(scanner.Text(), "|")
+			oldPosts = append(oldPosts, lineSlice[0])
+		}
+
 		AdListingResult := new(Response)
 		_, err := sling.New().Get(ChototBaseUrl + AdListingPath).QueryStruct(Q1Params).ReceiveSuccess(AdListingResult)
 		if err != nil {
@@ -64,7 +96,10 @@ func main() {
 		tempMaxTime := maxTime
 		for _, RentalPost := range AdListingResult.Ads {
 			postTime := time.Unix(RentalPost.ListTime, 0)
-			if RentalPost.Price > MaxPrice || maxTime.After(postTime) || maxTime.Equal(postTime) {
+			if isOldPost(oldPosts, strconv.FormatInt(int64(RentalPost.AdID), 10)) ||
+				RentalPost.Price > MaxPrice ||
+				maxTime.After(postTime) ||
+				maxTime.Equal(postTime) {
 				continue
 			}
 			if postTime.After(tempMaxTime) {
@@ -78,11 +113,8 @@ func main() {
 				RentalPost.Price,
 				RentalPost.ImageURL,
 			)
-			fmt.Printf("AdID: %d\n ", RentalPost.AdID)
-			fmt.Printf("URL: https://nha.chotot.com/%d.htm \n", RentalPost.ListID)
-			fmt.Printf("Subject: %s \n", RentalPost.Subject)
-			fmt.Printf("Price: %d \n", RentalPost.Price)
-			fmt.Printf("*** \n")
+			log := fmt.Sprintf("%d|https://nha.chotot.com/%d.htm|%s|%d\n", RentalPost.AdID, RentalPost.ListID, RentalPost.Subject, RentalPost.Price)
+			f.WriteString(log)
 		}
 		maxTime = tempMaxTime
 

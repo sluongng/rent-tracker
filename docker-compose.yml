@@ -1,0 +1,13 @@
+
+version: '3.6'
+
+services:
+  rent-tracker:
+    container_name: rent-tracker
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    restart: always
+    volumes:
+      - /home/nb/work/golang/src/github.com/sluongng/rent-tracker/log:/log
+      - /etc/ssl/certs/ca-certificates.crt:/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem
