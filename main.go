@@ -79,7 +79,6 @@ func main() {
 	snipString := ""
 
 	git := gitlab.NewClient(nil, GitlabToken)
-	maxTime := time.Now().Truncate(1 * time.Hour)
 
 	for {
 
@@ -106,18 +105,9 @@ func main() {
 			log.Printf("Error executing request: %s", err)
 		}
 
-		tempMaxTime := maxTime
 		for _, RentalPost := range AdListingResult.Ads {
-			// TODO: rework the logic here to use old post list instead of time
-			postTime := time.Unix(RentalPost.ListTime, 0)
-			if isOldPost(oldPosts, strconv.FormatInt(int64(RentalPost.AdID), 10)) ||
-				RentalPost.Price > MaxPrice ||
-				maxTime.After(postTime) ||
-				maxTime.Equal(postTime) {
+			if isOldPost(oldPosts, strconv.FormatInt(int64(RentalPost.AdID), 10)) || RentalPost.Price > MaxPrice {
 				continue
-			}
-			if postTime.After(tempMaxTime) {
-				tempMaxTime = postTime
 			}
 
 			Send2DingTalk(
@@ -146,17 +136,18 @@ func main() {
 		}
 
 		// Update Snippet
-		_, _, err = git.Snippets.UpdateSnippet(
-			GitlabSnippetID,
-			&gitlab.UpdateSnippetOptions{
-				Content: &snipString,
-			},
-		)
-		if err != nil {
-			log.Printf("Could not update Snippet: %s", err)
-		}
+		go func() {
+			_, _, err = git.Snippets.UpdateSnippet(
+				GitlabSnippetID,
+				&gitlab.UpdateSnippetOptions{
+					Content: &snipString,
+				},
+			)
+			if err != nil {
+				log.Printf("Could not update Snippet: %s", err)
+			}
+		}()
 
-		maxTime = tempMaxTime
 		log.Printf("Finished loop at: %s", time.Now().String())
 		time.Sleep(1 * time.Minute)
 	}
