@@ -9,6 +9,7 @@ import (
 	"github.com/xanzy/go-gitlab"
 	"strconv"
 	"strings"
+	"bytes"
 )
 
 const (
@@ -124,21 +125,22 @@ func main() {
 				RentalPost.ImageURL,
 			)
 
-			// Update Snippet
-			snipString = strings.Join([]string{
-				snipString,
-				fmt.Sprintf(
-					"%d|https://nha.chotot.com/%d.htm|%s|%d",
-					RentalPost.AdID,
-					RentalPost.ListID,
-					RentalPost.Subject,
-					RentalPost.Price,
-				),
-			}, "\n")
+			var buff bytes.Buffer
+			buff.WriteString(snipString)
+			buff.WriteString("\n")
+			buff.WriteString(fmt.Sprintf(
+				"%d|https://nha.chotot.com/%d.htm|%s|%d",
+				RentalPost.AdID,
+				RentalPost.ListID,
+				RentalPost.Subject,
+				RentalPost.Price,
+			))
+			snipString = buff.String()
 
 			oldPosts = append(oldPosts, fmt.Sprintf("%d", RentalPost.AdID))
 		}
 
+		// Update Snippet
 		_, _, err = git.Snippets.UpdateSnippet(
 			GitlabSnippetID,
 			&gitlab.UpdateSnippetOptions{
