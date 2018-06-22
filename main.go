@@ -1,13 +1,12 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"github.com/dghubble/sling"
+	"github.com/xanzy/go-gitlab"
 	"strconv"
 	"strings"
 )
@@ -16,7 +15,13 @@ const (
 	ChototBaseUrl = "https://gateway.chotot.com"
 	AdListingPath = "/v1/public/ad-listing"
 	MaxPrice      = 7000000
-	AccessToken   = "e758dd042bf4c3f825fe46efe817b219c1c3ed4f38df17a6601d384e1ceff6a9"
+
+	// Dingtalk
+	AccessToken   = ""
+
+	// Gitlab
+	GitlabToken     = ""
+	GitlabSnippetID = 1726507
 )
 
 var (
@@ -69,22 +74,26 @@ func isOldPost(postIdList []string, postId string) bool {
 }
 
 func main() {
+	var oldPosts []string
+	snipString := ""
 
-	f, err := os.OpenFile("log/app.log", os.O_APPEND|os.O_RDWR, 0600)
-	if err != nil {
-		log.Printf("Error opening log file: %s", err)
-	}
-	defer f.Close()
-	scanner := bufio.NewScanner(f)
-	scanner.Split(bufio.ScanLines)
-
+	git := gitlab.NewClient(nil, GitlabToken)
 	maxTime := time.Now().Truncate(1 * time.Hour)
 
 	for {
-		var oldPosts []string
-		for scanner.Scan() {
-			lineSlice := strings.Split(scanner.Text(), "|")
-			oldPosts = append(oldPosts, lineSlice[0])
+
+		if len(oldPosts) == 0 || snipString == "" {
+			// Get latest RAW Snippet
+			snippetContent, _, err := git.Snippets.SnippetContent(GitlabSnippetID)
+			if err != nil {
+				log.Printf("Error getting gitlab Snippet: %s", err)
+			}
+			snipString := string(snippetContent)
+
+			// Get list of old posts ID
+			for _, line := range strings.Split(snipString, "\n") {
+				oldPosts = append(oldPosts, strings.Split(line, "|")[0])
+			}
 		}
 
 		AdListingResult := new(Response)
@@ -95,6 +104,7 @@ func main() {
 
 		tempMaxTime := maxTime
 		for _, RentalPost := range AdListingResult.Ads {
+			// TODO: rework the logic here to use old post list instead of time
 			postTime := time.Unix(RentalPost.ListTime, 0)
 			if isOldPost(oldPosts, strconv.FormatInt(int64(RentalPost.AdID), 10)) ||
 				RentalPost.Price > MaxPrice ||
@@ -113,11 +123,34 @@ func main() {
 				RentalPost.Price,
 				RentalPost.ImageURL,
 			)
-			log := fmt.Sprintf("%d|https://nha.chotot.com/%d.htm|%s|%d\n", RentalPost.AdID, RentalPost.ListID, RentalPost.Subject, RentalPost.Price)
-			f.WriteString(log)
-		}
-		maxTime = tempMaxTime
 
+			// Update Snippet
+			snipString = strings.Join([]string{
+				snipString,
+				fmt.Sprintf(
+					"%d|https://nha.chotot.com/%d.htm|%s|%d",
+					RentalPost.AdID,
+					RentalPost.ListID,
+					RentalPost.Subject,
+					RentalPost.Price,
+				),
+			}, "\n")
+
+			oldPosts = append(oldPosts, fmt.Sprintf("%d", RentalPost.AdID))
+		}
+
+		_, _, err = git.Snippets.UpdateSnippet(
+			GitlabSnippetID,
+			&gitlab.UpdateSnippetOptions{
+				Content: &snipString,
+			},
+		)
+		if err != nil {
+			log.Printf("Could not update Snippet: %s", err)
+		}
+
+		maxTime = tempMaxTime
+		log.Printf("Finished loop at: %s", time.Now().String())
 		time.Sleep(1 * time.Minute)
 	}
 }
