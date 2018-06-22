@@ -5,11 +5,11 @@ import (
 	"log"
 	"time"
 
+	"bytes"
 	"github.com/dghubble/sling"
 	"github.com/xanzy/go-gitlab"
 	"strconv"
 	"strings"
-	"bytes"
 )
 
 const (
@@ -93,6 +93,9 @@ func main() {
 
 			// Get list of old posts ID
 			for _, line := range strings.Split(snipString, "\n") {
+				if line == "" {
+					continue
+				}
 				oldPosts = append(oldPosts, strings.Split(line, "|")[0])
 			}
 		}
@@ -126,8 +129,10 @@ func main() {
 			)
 
 			var buff bytes.Buffer
-			buff.WriteString(snipString)
-			buff.WriteString("\n")
+			if snipString != "" {
+				buff.WriteString(snipString)
+				buff.WriteString("\n")
+			}
 			buff.WriteString(fmt.Sprintf(
 				"%d|https://nha.chotot.com/%d.htm|%s|%d",
 				RentalPost.AdID,
