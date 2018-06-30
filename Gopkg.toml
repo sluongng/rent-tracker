@@ -33,6 +33,10 @@
   branch = "master"
   name = "github.com/sluongng/dingbot"
 
+[[constraint]]
+  name = "github.com/xanzy/go-gitlab"
+  version = "0.10.2"
+
 [prune]
   go-tests = true
   unused-packages = true
