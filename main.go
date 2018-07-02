@@ -88,7 +88,7 @@ func main() {
 			if err != nil {
 				log.Printf("Error getting gitlab Snippet: %s", err)
 			}
-			snipString := string(snippetContent)
+			snipString = string(snippetContent)
 
 			// Get list of old posts ID
 			for _, line := range strings.Split(snipString, "\n") {
